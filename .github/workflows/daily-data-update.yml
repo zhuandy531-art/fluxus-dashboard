@@ -1,0 +1,95 @@
+# Daily Market Data Update — Fluxus Capital Dashboard
+# Cherry-picked structure from traderwillhu/market_dashboard refresh_data.yml
+# Enhanced with: Discord webhook, validation step, proper timezone handling
+name: Daily Market Data Update
+
+on:
+  schedule:
+    # 16:30 EST = 21:30 UTC Mon-Fri (after US market close)
+    - cron: '30 21 * * 1-5'
+  workflow_dispatch: # Manual trigger for testing
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: pipeline/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r pipeline/requirements.txt
+
+      - name: Run data pipeline
+        run: python -m pipeline.screeners.run_all
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          TZ: UTC
+
+      - name: Validate outputs
+        run: |
+          echo "Validating output files..."
+          EXPECTED_FILES=(
+            "data/output/signals.json"
+            "data/output/etf_data.json"
+            "data/output/momentum_97.json"
+            "data/output/gainers_4pct.json"
+            "data/output/vol_up_gainers.json"
+            "data/output/ema21_watch.json"
+            "data/output/healthy_charts.json"
+            "data/output/episodic_pivot.json"
+            "data/output/stockbee_ratio.json"
+            "data/output/vcp.json"
+          )
+          FAIL=0
+          for f in "${EXPECTED_FILES[@]}"; do
+            if [ ! -s "$f" ]; then
+              echo "ERROR: $f is empty or missing"
+              FAIL=1
+            else
+              echo "OK: $f ($(wc -c < "$f") bytes)"
+            fi
+          done
+          if [ $FAIL -eq 1 ]; then
+            echo "Validation FAILED"
+            exit 1
+          fi
+          echo "All output files validated successfully"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/output/ data/history/
+          git diff --staged --quiet || (git commit -m "chore: market data $(date +%Y-%m-%d)" && git push)
+
+      - name: Discord notification (success)
+        if: success() && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          SCREENER_COUNT=$(ls data/output/*.json 2>/dev/null | wc -l)
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"content\":\"Dashboard updated: $(date +%Y-%m-%d) — ${SCREENER_COUNT} files generated\"}" \
+            "$DISCORD_WEBHOOK_URL"
+
+      - name: Discord notification (failure)
+        if: failure() && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"content\":\"Dashboard update FAILED: $(date +%Y-%m-%d) — check Actions logs\"}" \
+            "$DISCORD_WEBHOOK_URL"

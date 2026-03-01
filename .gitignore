@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+.env
+.env.local
+
+# Data (keep output + history, ignore raw bulk)
+data/raw/*.csv
+data/raw/*.tmp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+*.pem
+*.key
+credentials.json
