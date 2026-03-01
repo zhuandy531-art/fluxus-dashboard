@@ -6,36 +6,57 @@ const CHECKS = [
   { key: '50sma_gt_200sma', label: '50 SMA > 200 SMA' },
 ]
 
+const TICKERS = ['SPY', 'QQQ', 'IWM', 'RSP']
+
 export default function PowerTrend({ signals }) {
-  const pt = signals?.QQQ?.power_trend
-  if (!pt) return null
+  if (!signals) return null
 
   return (
     <div>
       <h3 className="text-[10px] font-medium uppercase tracking-wide text-stone-500 mb-2">
-        QQQ Power Trend
+        Power Trend
       </h3>
-      <div className="flex flex-col gap-1.5">
-        {CHECKS.map((check) => {
-          const passed = pt[check.key]
-          return (
-            <div
-              key={check.key}
-              className="flex items-center justify-between"
-            >
-              <span className="text-xs text-stone-600">
-                {check.label}
-              </span>
-              <span
-                className={`font-mono text-xs ${
-                  passed ? 'text-green-600' : 'text-red-500'
-                }`}
-              >
-                {passed ? 'Yes' : 'No'}
-              </span>
-            </div>
-          )
-        })}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead>
+            <tr>
+              <th className="text-[10px] font-medium uppercase tracking-wide text-stone-400 pb-1.5 pr-2">
+                Check
+              </th>
+              {TICKERS.map((t) => (
+                <th
+                  key={t}
+                  className="text-[10px] font-medium uppercase tracking-wide text-stone-400 pb-1.5 text-center"
+                >
+                  {t}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {CHECKS.map((check) => (
+              <tr key={check.key}>
+                <td className="text-xs text-stone-600 py-0.5 pr-2">
+                  {check.label}
+                </td>
+                {TICKERS.map((ticker) => {
+                  const pt = signals[ticker]?.power_trend
+                  const passed = pt?.[check.key]
+                  return (
+                    <td
+                      key={ticker}
+                      className={`font-mono text-xs py-0.5 text-center ${
+                        passed ? 'text-green-600' : 'text-red-500'
+                      }`}
+                    >
+                      {passed ? 'Yes' : 'No'}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )

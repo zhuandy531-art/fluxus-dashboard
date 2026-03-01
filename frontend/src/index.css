@@ -33,3 +33,13 @@ body {
 .bg-white { background-color: #ffffff !important; }
 .bg-stone-50 { background-color: #fafaf9 !important; }
 .text-stone-900 { color: #1c1917 !important; }
+
+/* ATR badge colors — explicit definitions for dynamic class usage */
+.bg-green-50 { background-color: #f0fdf4 !important; }
+.text-green-700 { color: #15803d !important; }
+.bg-amber-50 { background-color: #fffbeb !important; }
+.text-amber-700 { color: #b45309 !important; }
+.bg-red-50 { background-color: #fef2f2 !important; }
+.text-red-700 { color: #b91c1c !important; }
+.bg-stone-100 { background-color: #f5f5f4 !important; }
+.text-stone-500 { color: #78716c !important; }

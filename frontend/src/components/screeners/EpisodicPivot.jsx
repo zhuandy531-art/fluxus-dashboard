@@ -1,4 +1,4 @@
-import { fmtPct, pctColor } from '../../lib/format'
+import { fmtPctRaw, pctColor } from '../../lib/format'
 
 export default function EpisodicPivot({ data }) {
   if (!data?.results || data.results.length === 0) return null
@@ -32,7 +32,7 @@ export default function EpisodicPivot({ data }) {
               {r.pivot != null ? Number(r.pivot).toFixed(2) : '\u2014'}
             </td>
             <td className={`font-mono text-right py-1 pl-2 ${pctColor(r.pct_to_pivot)}`}>
-              {fmtPct(r.pct_to_pivot)}
+              {fmtPctRaw(r.pct_to_pivot)}
             </td>
           </tr>
         ))}

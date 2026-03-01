@@ -43,6 +43,13 @@ export function signalLabel(signal) {
   return map[signal] || signal
 }
 
+// For values already in percent (e.g., pct_to_pivot = 0.1 means 0.1%)
+export function fmtPctRaw(val) {
+  if (val == null || isNaN(val)) return '—'
+  const sign = val > 0 ? '+' : ''
+  return `${sign}${val.toFixed(1)}%`
+}
+
 export function formatTimestamp(ts) {
   if (!ts) return ''
   const d = new Date(ts)
